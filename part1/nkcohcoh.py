@@ -1,5 +1,6 @@
 from sys import argv as argv
 import heapq
+
 try:
     from part1.board import Board as Board
 except ImportError:
@@ -11,6 +12,10 @@ if len(argv) != 5:
 
 n = int(argv[1])
 k = int(argv[2])
+
+if k > n:
+    print("Invalid K value")
+    exit(1)
 
 
 def has_valid_elements(argument):
@@ -30,16 +35,16 @@ def validate_and_return_board(argument):
         exit(1)
     return argument
 
-board = validate_and_return_board(argv[3])  # TODO: Check if the board is valid.
-time = argv[4]  # TODO: Work on implementing time
+
+board = validate_and_return_board(argv[3])
+time = int(argv[4])  # TODO: Work on implementing time
 
 Board.N = n
 Board.K = k
 
 
-
 def get_index(r, c):
-    return r*n+c
+    return r * n + c
 
 
 def player(s):
@@ -55,7 +60,8 @@ def set_players(board):
     Board.max_player = max_player
     Board.min_player = min_player
 
-def add_piece(board,i):
+
+def add_piece(board, i):
     if board[i] != ".":
         return False
     return Board.new_board(board, i)
@@ -64,7 +70,7 @@ def add_piece(board,i):
 def get_next_move(board):
     successors = []
     for i in range(0, len(board)):
-        potential_next_move = add_piece(board,i)
+        potential_next_move = add_piece(board, i)
 
         if potential_next_move and potential_next_move.score == 100:
             # print(str(potential_next_move) + " Score %d" % potential_next_move.score)
@@ -74,19 +80,16 @@ def get_next_move(board):
             heapq.heappush(successors, potential_next_move)
     return heapq.heappop(successors)
 
+
 while True:
     set_players(str(board))
     board = get_next_move(str(board))
     print("Next Move = " + board.get_board())
-    print("Score = %d" %board.score)
+    print("Score = %d" % board.score)
 
     if board.score < 0:
-        print("%s won the game" %Board.min_player)
+        print("%s won the game" % Board.min_player)
         break
     if str(board).count('.') == 0 and board.score > 0:
         print("Match Drawn")
         break
-
-
-
-

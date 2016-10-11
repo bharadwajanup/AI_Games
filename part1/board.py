@@ -1,4 +1,6 @@
 import itertools
+
+
 class Board:
     N = 0
     K = 0
@@ -36,7 +38,7 @@ class Board:
         s = 0
         e = int(self.N)
         for i in range(1, int(self.N) + 1):
-            #print(self.state[s:e])
+            # print(self.state[s:e])
             string += "\t".join(self.state[s:e]) + "\n"
             s = e
             e = int(self.N) * (i + 1)
@@ -49,10 +51,10 @@ class Board:
         return cls(new_state, i)
 
     def get_value(self, r, c):
-        index = self.get_index(r,c)
+        index = self.get_index(r, c)
         return self.state[index]
 
-    def get_index(self,r,c):
+    def get_index(self, r, c):
         return int(r * int(self.N) + c)
 
     def get_score_for_pos(self, i):
@@ -67,14 +69,14 @@ class Board:
             return -100
         # if self.eval(i, self.min_player) > (0 if self.state[i] != self.min_player else 1):
         #     initial_score -= 20
-        if self.is_obstructing_opponent(''.join(elem for elem in coverage_list),self.min_player):
+        if self.is_obstructing_opponent(''.join(elem for elem in coverage_list), self.min_player):
             initial_score -= 20
         if min_distance != self.K:  # (0 if self.state[i] != self.max_player else 1):
             initial_score -= 40
         return initial_score
 
-    def get_coverage_list(self,i):
-        r,c = self.get_row_col(i)
+    def get_coverage_list(self, i):
+        r, c = self.get_row_col(i)
         row_col = self.get_row_col_elements(r, c)
         diagonals = self.get_diagonal_elements(r, c)
         return row_col + diagonals
@@ -87,13 +89,14 @@ class Board:
     def get_row_col_elements(self, r, c):
         start = self.get_limit(c, 'U')
         end = self.get_limit(c, 'L')
-        row_string = self.state[self.get_index(r, start):self.get_index(r, end)+1]#self.get_comparator_string(start, end, r, "R")
+        row_string = self.state[self.get_index(r, start):self.get_index(r,
+                                                                        end) + 1]  # self.get_comparator_string(start, end, r, "R")
 
         start = self.get_limit(r, 'U')
         end = self.get_limit(r, 'L')
         col_string = self.get_comparator_string(start, end, c, "C")
 
-        return [row_string,col_string]
+        return [row_string, col_string]
 
     def find_max_pattern(self, lst, player):
         min_len = self.K + 1
@@ -183,7 +186,7 @@ class Board:
         losing_string = player * k
         while k + i <= str_len:
             sub_str = str1[i:(k + i)]
-            distance = k if sub_str.strip(player+'.') else self.find_distance(sub_str, losing_string)
+            distance = k if sub_str.strip(player + '.') else self.find_distance(sub_str, losing_string)
             min_val = min(min_val, distance)
             i += 1
         return min_val
@@ -199,6 +202,3 @@ class Board:
             if str1[i] != str2[i]:
                 c += 1
         return c
-
-
-
