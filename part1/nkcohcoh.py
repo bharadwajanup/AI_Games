@@ -67,10 +67,10 @@ def get_next_move(board):
         potential_next_move = add_piece(board,i)
 
         if potential_next_move and potential_next_move.score == 100:
-            #print(str(potential_next_move) + " Score %d" % potential_next_move.score)
+            # print(str(potential_next_move) + " Score %d" % potential_next_move.score)
             return potential_next_move
         elif potential_next_move:
-            #print(str(potential_next_move) + " Score %d" % potential_next_move.score)
+            # print(str(potential_next_move) + " Score %d" % potential_next_move.score)
             heapq.heappush(successors, potential_next_move)
     return heapq.heappop(successors)
 

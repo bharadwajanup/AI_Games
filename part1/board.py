@@ -37,10 +37,10 @@ class Board:
         e = int(self.N)
         for i in range(1, int(self.N) + 1):
             #print(self.state[s:e])
-            string += self.state[s:e] + "\n"
+            string += "\t".join(self.state[s:e]) + "\n"
             s = e
             e = int(self.N) * (i + 1)
-        return string
+        return string.replace('.', '-')
 
     @classmethod
     def new_board(cls, state, i):
@@ -61,27 +61,30 @@ class Board:
         initial_score = 100
         if val == '.' or val == self.min_player:
             return 0
-        if self.eval(i, self.max_player) >= int(self.K):
+        coverage_list = self.get_coverage_list(i)
+        min_distance = self.find_max_pattern(coverage_list, self.max_player)
+        if min_distance == 0:
             return -100
-        if self.eval(i, self.min_player) > (0 if self.state[i] != self.min_player else 1):
+        # if self.eval(i, self.min_player) > (0 if self.state[i] != self.min_player else 1):
+        #     initial_score -= 20
+        if self.is_obstructing_opponent(''.join(elem for elem in coverage_list),self.min_player):
             initial_score -= 20
-        if self.eval(i, self.max_player) > (0 if self.state[i] != self.max_player else 1):
+        if min_distance != self.K:  # (0 if self.state[i] != self.max_player else 1):
             initial_score -= 40
         return initial_score
 
-    def eval(self, i, player):
-        r, c = self.get_row_col(i)
-        row_col = self.check_row_col(r,c,player)#self.check_row_col(i, player)
-        diag = self.check_diagonal(r, c, player)
-        # print("%d,%d" %(row_col,diag))
-        return max(row_col, diag)
+    def get_coverage_list(self,i):
+        r,c = self.get_row_col(i)
+        row_col = self.get_row_col_elements(r, c)
+        diagonals = self.get_diagonal_elements(r, c)
+        return row_col + diagonals
 
     def get_row_col(self, i):
         c = int(i) % int(int(self.N))
         r = (i - c) / int(int(self.N))
         return r, c
 
-    def check_row_col(self, r, c, player):
+    def get_row_col_elements(self, r, c):
         start = self.get_limit(c, 'U')
         end = self.get_limit(c, 'L')
         row_string = self.state[self.get_index(r, start):self.get_index(r, end)+1]#self.get_comparator_string(start, end, r, "R")
@@ -90,17 +93,19 @@ class Board:
         end = self.get_limit(r, 'L')
         col_string = self.get_comparator_string(start, end, c, "C")
 
-        return self.find_max_pattern(row_string, col_string, player)
+        return [row_string,col_string]
 
-    def find_max_pattern(self, str1, str2, player):
-        str1_count = self.find_max_continuous_player(str1, player)
-        str2_count = self.find_max_continuous_player(str2, player)
-        return max(str1_count, str2_count)
+    def find_max_pattern(self, lst, player):
+        min_len = self.K + 1
+        for string in lst:
+            count = self.find_min_distance(string, player)
+            min_len = min(min_len, count)
+        return min_len
 
-    def check_diagonal(self, r, c, player):
+    def get_diagonal_elements(self, r, c):
         diagonal_24 = self.get_diagonal_comparator_string(r, c, 'LR')
         diagonal_13 = self.get_diagonal_comparator_string(r, c, 'RL')
-        return self.find_max_pattern(diagonal_13, diagonal_24, player)
+        return [diagonal_24, diagonal_13]
 
     def get_diagonal_comparator_string(self, r, c, diag_type):
         row = r
@@ -170,145 +175,30 @@ class Board:
             i += 1
         return max_val
 
-    # def row_col_test(self, r, c, player):
-    #     temp = c
-    #     max_col_count = 0
-    #     counter = 0
-    #     step_counter = 0
-    #     while temp < int(self.N):
-    #         if self.get_value(r, temp) == player:
-    #             counter += 1
-    #         if step_counter == int(self.K):
-    #             break
-    #         step_counter += 1
-    #         temp += 1
-    #     max_col_count = max(max_col_count, counter)
-    #
-    #     temp = c
-    #     counter = 0
-    #     step_counter = 0
-    #     while temp >= 0:
-    #         if self.get_value(r, temp) == player:
-    #             counter += 1
-    #         if step_counter == int(self.K):
-    #             break
-    #         step_counter += 1
-    #         temp -= 1
-    #     max_col_count = max(max_col_count, counter)
-    #
-    #     if max_col_count == int(self.K):
-    #         return max_col_count
-    #
-    #     max_row_count = 0
-    #     temp = r
-    #     counter = 0
-    #     step_counter = 0
-    #     while temp >= 0:
-    #
-    #         if self.get_value(temp, c) == player:
-    #             counter += 1
-    #         if step_counter == int(self.K):
-    #             break
-    #         step_counter += 1
-    #         temp -= 1
-    #
-    #     max_row_count = max(max_row_count, counter)
-    #
-    #     if max_row_count == int(self.K):
-    #         return max_row_count
-    #
-    #     temp = r
-    #     counter = 0
-    #     step_counter = 0
-    #     while temp < int(self.N):
-    #
-    #         if self.get_value(temp, c) == player:
-    #             counter += 1
-    #         if step_counter == int(self.K):
-    #             break
-    #         step_counter += 1
-    #         temp += 1
-    #
-    #     max_row_count = max(max_row_count, counter)
-    #     return max(max_row_count, max_col_count)
-    #
-    # def diagonal_test(self, row, col, player):
-    #     temp_row = row
-    #     temp_col = col
-    #     counter = 0
-    #     self_counter = 0
-    #     max_counter = counter
-    #     N = int(self.N)
-    #     # quad 1
-    #     while temp_row < N and temp_col < N:
-    #
-    #         if self.get_value(temp_row, temp_col) == player:
-    #             counter += 1
-    #
-    #         if counter == int(self.K):
-    #             return counter
-    #         if self_counter == int(self.K):
-    #             break
-    #         self_counter += 1
-    #         temp_row += 1
-    #         temp_col += 1
-    #     max_counter = max(max_counter, counter)
-    #     temp_row = row
-    #     temp_col = col
-    #     counter = 0
-    #     self_counter = 0
-    #
-    #     # quad 2
-    #     while temp_row >= 0 and temp_col < N:
-    #         if self.get_value(temp_row, temp_col) == player:
-    #             counter += 1
-    #         if counter == int(self.K):
-    #             return counter
-    #         if self_counter == int(self.K):
-    #             break
-    #         self_counter += 1
-    #         temp_row -= 1
-    #         temp_col += 1
-    #
-    #     max_counter = max(max_counter, counter)
-    #     temp_row = row
-    #     temp_col = col
-    #     counter = 0
-    #     self_counter = 0
-    #     # quad 3
-    #     while temp_row >= 0 and temp_col >= 0:
-    #         if self.get_value(temp_row, temp_col) == player:
-    #             counter += 1
-    #         if counter == int(self.K):
-    #             return counter
-    #         if self_counter == int(self.K):
-    #             break
-    #         self_counter += 1
-    #         temp_row -= 1
-    #         temp_col -= 1
-    #
-    #     max_counter = max(max_counter, counter)
-    #     temp_row = row
-    #     temp_col = col
-    #     counter = 0
-    #     self_counter = 0
-    #
-    #     # quad 4
-    #     while temp_row < N and temp_col >= 0:
-    #         if self.get_value(temp_row, temp_col) == player:
-    #             counter += 1
-    #         if counter == int(self.K):
-    #             return counter
-    #         if self_counter == int(self.K):
-    #             break
-    #         self_counter += 1
-    #         temp_row += 1
-    #         temp_col -= 1
-    #
-    #     max_counter = max(max_counter, counter)
-    #
-    #     return max_counter
+    def find_min_distance(self, str1, player):
+        str_len = len(str1)
+        i = 0
+        k = int(self.K)
+        min_val = k + 1
+        losing_string = player * k
+        while k + i <= str_len:
+            sub_str = str1[i:(k + i)]
+            distance = k if sub_str.strip(player+'.') else self.find_distance(sub_str, losing_string)
+            min_val = min(min_val, distance)
+            i += 1
+        return min_val
 
+    def is_obstructing_opponent(self, string, player):
+        return string.count(player) > 0
+
+    def find_distance(self, str1, str2):
+        if len(str1) != len(str2):
+            print("Length of two strings not the same. Debug")
+        c = 0
+        for i in range(0, len(str1)):
+            if str1[i] != str2[i]:
+                c += 1
+        return c
 
 
 
