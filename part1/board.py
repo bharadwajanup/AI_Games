@@ -4,13 +4,16 @@ import itertools
 class Board:
     N = 0
     K = 0
-    max_player = ""
-    min_player = ""
+    origin_max_player = ""
+    origin_min_player = ""
 
-    def __init__(self, state, latest_change=None):
+    def __init__(self, state, maxp, minp, latest_change):
         self.state = state
         self.latest_change = latest_change
-        self.score = self.get_score(latest_change)
+        self.max_player = maxp
+        self.min_player = minp
+        self.score = -200 if latest_change is None else self.get_score(latest_change)
+        self.id = []
 
     def __len__(self):
         return len(self.state)
@@ -25,10 +28,19 @@ class Board:
         # return score
 
     def __eq__(self, other):
-        return -self.score == -other.score
+        if isinstance(other, Board):
+            return -self.score == -other.score
+        return -self.score == -other
 
     def __lt__(self, other):
-        return -int(self.score) < -int(other.score)
+        if isinstance(other, Board):
+            return -int(self.score) < -int(other.score)
+        return -int(self.score) < -other
+
+    def __gt__(self, other):
+        if isinstance(other, Board):
+            return -int(self.score) > -int(other.score)
+        return -int(self.score) > -other
 
     def __str__(self):
         return self.state
@@ -45,10 +57,10 @@ class Board:
         return string.replace('.', '-')
 
     @classmethod
-    def new_board(cls, state, i):
-        new_state = state[:i] + cls.max_player + state[i + 1:]
+    def new_board(cls, state, max_player, min_player, i=None):
+        new_state = state if i is None else state[:i] + max_player + state[i + 1:]
 
-        return cls(new_state, i)
+        return cls(new_state, max_player, min_player, i)
 
     def get_value(self, r, c):
         index = self.get_index(r, c)
@@ -71,7 +83,7 @@ class Board:
         #     initial_score -= 20
         if self.is_obstructing_opponent(''.join(elem for elem in coverage_list), self.min_player):
             initial_score -= 20
-        if min_distance != self.K:  # (0 if self.state[i] != self.max_player else 1):
+        if min_distance != self.K-1:  # (0 if self.state[i] != self.max_player else 1):
             initial_score -= 40
         return initial_score
 
