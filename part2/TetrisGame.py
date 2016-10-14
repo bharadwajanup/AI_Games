@@ -10,7 +10,7 @@ import sys, time, random, threading, thread
 class EndOfGame(Exception):
   def __init__(self,s) :
     self.str = s
-  
+
   def __str__(self):
     return self.str
 
@@ -27,7 +27,7 @@ class TetrisGame:
     self.piece_dist = [ i for m in self.piece_dist for i in m ]
     self.next_piece = None
     self.new_piece()
-    
+
   # rotate a given piece by a given angle
   @staticmethod
   def rotate_piece(piece, rotation):
@@ -47,7 +47,7 @@ class TetrisGame:
   def check_collision((board, score), piece, row, col):
       return col+len(piece[0]) > TetrisGame.BOARD_WIDTH or row+len(piece) > TetrisGame.BOARD_HEIGHT \
           or any( [ any( [ (c != " " and board[i_r+row][col+i_c] != " ") for (i_c, c) in enumerate(r) ] ) for (i_r, r) in enumerate(piece) ] )
-    
+
   # take "union" of two strings, e.g. compare each character of two strings and return non-space one if it exists
   @staticmethod
   def combine(str1, str2):
@@ -72,7 +72,7 @@ class TetrisGame:
     (self.piece, self.col) = (new_piece, new_col) if not TetrisGame.check_collision(self.state, new_piece, self.row, new_col) else (self.piece, self.col)
 
   def finish(self):
-      self.state = TetrisGame.remove_complete_lines( TetrisGame.place_piece(self.state, self.piece, self.row, self.col) )      
+      self.state = TetrisGame.remove_complete_lines( TetrisGame.place_piece(self.state, self.piece, self.row, self.col) )
       self.new_piece()
 
   def new_piece(self):
@@ -94,7 +94,7 @@ class TetrisGame:
   ######
   # These are the "public methods" that your code might want to call!
   #
- 
+
   # move piece left, if possible, else do nothing
   def left(self):
     self.move(-1, self.piece)
@@ -125,7 +125,7 @@ class TetrisGame:
   def get_piece(self):
     return (self.piece, self.row, self.col)
 
-  # return next piece 
+  # return next piece
   def get_next_piece(self):
     return self.next_piece
 
