@@ -50,7 +50,7 @@ class ComputerPlayer:
     def control_game(self, tetris):
         # another super simple algorithm: just move piece to the least-full column
         while 1:
-            # time.sleep(0.01)
+            # time.sleep(0.1)
 
             board = tetris.get_board()
             piece_info = tetris.get_piece()
@@ -66,16 +66,17 @@ class ComputerPlayer:
             new_col = info[3]
             rotation = info[4]
 
-
             for rotate in range(rotation/90):
                 tetris.rotate()
 
             if new_col > current_col:
                 for i in range(new_col - current_col):
                     tetris.right()
+                tetris.down()
             elif new_col < current_col:
                 for i in range(current_col - new_col):
                     tetris.left()
+                tetris.down()
             else:
                 tetris.down()
 
@@ -89,12 +90,6 @@ class ComputerPlayer:
 
     # For the given new board, compute the quality of this board
     def evaluation(self, board, landing_col):
-        landing_height = 0
-        for row in range(len(board)):
-            if board[row][landing_col] == 'x':
-                landing_height = len(board) - row
-                break
-
         rows_elimated = 0
         rows_spot_change = 0
         for row in range(len(board)):
@@ -112,16 +107,22 @@ class ComputerPlayer:
                 elif board[row][col] != board[row][col+1]:
                     rows_spot_change += 1
 
+        landing_height = 0
+        for row in range(len(board)):
+            if board[row][landing_col] == 'x':
+                landing_height = len(board) - 1 - row - rows_elimated
+                break
+
         col_spot_change = 0
         for col in range(len(board[0])):
             for row in range(len(board)):
                 if row == 0:
                     if board[row][col] == 'x':
                         col_spot_change += 1
-                    if board[row][col] != board[row+1][col]:
+                    if board[row][col] != board[1][col]:
                         col_spot_change += 1
                 elif row == len(board) - 1:
-                    if board[row][col] == '':
+                    if board[row][col] == ' ':
                         col_spot_change += 1
                 elif board[row][col] != board[row+1][col]:
                     col_spot_change += 1
@@ -146,42 +147,46 @@ class ComputerPlayer:
                         num_wells += sum(range(well_depth+1))
                         well_depth = 0
 
-        eval = -(-30*landing_height + 20*rows_elimated - 5*rows_spot_change - 5*col_spot_change - 70*num_holes -5*num_wells)
 
-        # print(landing_height, rows_elimated, rows_spot_change,col_spot_change, num_holes, num_wells)
-        # print eval
+        # print(landing_height, rows_elimated*len(board[0]), rows_spot_change,col_spot_change, num_holes, num_wells)
 
         # return -(-45*landing_height + 34*rows_elimated - 32*rows_spot_change - 93*col_spot_change - 79*num_holes -34*num_wells)
-        return eval
+        return -(-10*landing_height + 10*rows_elimated*len(board[0]) - 5*rows_spot_change - 5*col_spot_change - 50*num_holes -10*num_wells)
 
     def is_well(self, board, row, col):
         if board[row][col] == ' ':
-            return False
-        elif col == 0:
-            if board[row][1] == 'x':
+            if col == 0 and board[row][1] == 'x':
                 return True
-        elif col == len(board[0])-1:
-            if board[row][col-1] == 'x':
+            elif col == len(board[0])-1 and board[row][col-1] == 'x':
+                    return True
+            elif board[row][col-1] == 'x' and board[row][col+1] == 'x':
                 return True
-        elif board[row][col-1] == 'x' and board[row][col+1] == 'x':
-            return True
-        else:
-            return False
+        return False
 
     # Return a list of all possible new boards
     # Use TetrisGame.place_piece((board, scoer), piece, row, col)
     def all_new_board(self, board, piece):
         container = Queue.PriorityQueue()
-        new_board = []
-        for rotation in range(0, 360, 90):
+
+        flag = True
+        temp_piece = piece
+        while(flag):
+            try:
+                index = TetrisGame.PIECES.index(temp_piece)
+            except ValueError:
+                temp_piece = tetris.rotate_piece(temp_piece, 90)
+                flag = not flag
+            flag = not flag
+        rotation_list = [180, 180, 90, 360, 360]
+
+        for rotation in range(0, rotation_list[index], 90):
             new_piece = tetris.rotate_piece(piece, rotation)
             width = len(new_piece[0])
             for col in range(len(board[0]) - width + 1):
                 for row in range(len(board)):
-                    if TetrisGame.check_collision((board, 0), new_piece, row, col) and row != 0:
+                    if row != 0 and TetrisGame.check_collision((board, 0), new_piece, row, col):
                         new_board = TetrisGame.place_piece((board, 0), new_piece, row-1, col)[0]
                         container.put((self.evaluation(new_board, col), new_board, row-1, col, rotation))
-                        new_board = []
                         break
         return container
 
