@@ -150,8 +150,7 @@ class ComputerPlayer:
 
         # print(landing_height, rows_elimated*len(board[0]), rows_spot_change,col_spot_change, num_holes, num_wells)
 
-        # return -(-45*landing_height + 34*rows_elimated - 32*rows_spot_change - 93*col_spot_change - 79*num_holes -34*num_wells)
-        return -(-10*landing_height + 10*rows_elimated*len(board[0]) - 5*rows_spot_change - 5*col_spot_change - 50*num_holes -10*num_wells)
+        return -(-4.94*landing_height + 4.141*rows_elimated*len(board[0]) - 3.63*rows_spot_change - 8.17*col_spot_change - 8.56*num_holes - 4.164*num_wells)
 
     def is_well(self, board, row, col):
         if board[row][col] == ' ':
@@ -182,10 +181,14 @@ class ComputerPlayer:
         for rotation in range(0, rotation_list[index], 90):
             new_piece = tetris.rotate_piece(piece, rotation)
             width = len(new_piece[0])
+            height = len(new_piece)
             for col in range(len(board[0]) - width + 1):
-                for row in range(len(board)):
+                for row in range(len(board)-1):
                     if row != 0 and TetrisGame.check_collision((board, 0), new_piece, row, col):
-                        new_board = TetrisGame.place_piece((board, 0), new_piece, row-1, col)[0]
+                        try:
+                            new_board = TetrisGame.place_piece((board, 0), new_piece, row-1, col)[0]
+                        except IndexError:
+                            new_board = TetrisGame.place_piece((board, 0), new_piece, row-2, col)[0]
                         container.put((self.evaluation(new_board, col), new_board, row-1, col, rotation))
                         break
         return container
