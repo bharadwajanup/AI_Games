@@ -1,3 +1,18 @@
+'''
+To form a tettis game as a searching problem, we can formulate the successor funtion of a falling piece as to search throught all possbile landing rotations and positions to find out the best landing strtegy.
+For a certian piece, there are maximum four rotations and 10 landing positions (if the board lenght is 10). So the search problem is in O(1), which means the computation required for each falling piece is roughtly constant.
+So the key chellange we are facing in tetris is to find out a reasonable evaluation funciton (we can also think it as a heuristic funtion) to determine of all the possbile landing stratigies which is the best one. This can be achieved using priority queue.
+To create a good evaluation function, the features of each new board need to be carefully examed and choosen. During the process, I borrowed three ideas form the folloing source: http://www.cnblogs.com/youngshall/archive/2009/03/24/1420682.html
+There are some features that are easy to come up with: the landing height, the rows eliminated, the number of holds, the smothness of the rows and columns. The first three are easy to understand but the hard part is to find a way to quantify the smothness. I borrowed the idea from the above website to compute the number of transitions for each row and column.
+After the initial implementation with the five features above, I found that the program sometimes leave a few empty columns in the middle of the board and resulting a lose. Then I implemented the number of wells into the features which greatly improve the situation. So the final version of the evaluation consits of six features.
+
+-----------
+Seohyun you can add your part here describing how to optimize the fetrue weights.
+You can also update the feature weights in case you found a better set of weights.
+-----------
+
+'''
+
 # Simple tetris program! v0.2
 # D. Crandall, Sept 2016
 
