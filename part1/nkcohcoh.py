@@ -1,6 +1,7 @@
 import heapq
 from sys import argv as argv
 
+# import time
 try:
     from board import Board as Board
     import queue as Queue
@@ -40,7 +41,7 @@ def validate_and_return_board(argument):
 
 
 board = validate_and_return_board(argv[3])
-time = int(argv[4])  # TODO: Work on implementing time
+duration = int(argv[4])  # TODO: Work on implementing time
 
 Board.N = n
 Board.K = k
@@ -59,7 +60,7 @@ def set_players(board):
 
     max_player = players[0]
     min_player = players[1]
-    #print("It's %s's turn" % max_player)
+    # print("It's %s's turn" % max_player)
     Board.origin_max_player = max_player
     Board.origin_min_player = min_player
 
@@ -97,31 +98,30 @@ def check_for_lost_combination(string):
 
 def terminal_test(s):
     global n, k
-    val =""
-    for row in range(0,n):
+    val = ""
+    for row in range(0, n):
         val = s.state[n * row:n * (row + 1)]
         if check_for_lost_combination(val):
             return True
 
-    for col in range(0,n):
-        val = s.get_comparator_string(0,n-1,col,"C")
+    for col in range(0, n):
+        val = s.get_comparator_string(0, n - 1, col, "C")
         if check_for_lost_combination(val):
             return True
     # Tempororily set k to n
     s.K = n
     # go col-wise
-    for col in range(0,(n-k+1)):
-        val = s.get_diagonal_comparator_string(0,col,'LR')
+    for col in range(0, (n - k + 1)):
+        val = s.get_diagonal_comparator_string(0, col, 'LR')
         if check_for_lost_combination(val):
             return True
     # now row-wise
-    for row in range(0,(n-k+1)):
-        val = s.get_diagonal_comparator_string(row,0,'LR')
+    for row in range(0, (n - k + 1)):
+        val = s.get_diagonal_comparator_string(row, 0, 'LR')
         if check_for_lost_combination(val):
             return True
     s.K = k
     return False
-
 
 
 def actions(s):
@@ -149,9 +149,9 @@ def play(board):
 
     local_max = action_lst[0]
 
-    print("Local optimum \n"+str(local_max))
+    print(str(local_max))
     score = -float("inf")
-    max_score = -200
+    max_score = - 2 * Board.K * 10
     while len(action_lst) > 0:
         a = heapq.heappop(action_lst)
         cur_board = a
@@ -179,24 +179,45 @@ def play(board):
             break
 
     top_of_the_line = temp_lst.get()
-    if top_of_the_line[0] == -100:
+    if top_of_the_line[0] == -(Board.K * 10):
         temp2 = local_max
     else:
         temp2 = top_of_the_line[1]
+    print("Position: %s" % str(temp2.get_row_col(temp2.latest_change)))
     print(temp2)
     return temp2
 
 
-while True:
-    board = play(str(board))
-    if terminal_test(board) or str(board).count('.') == 0:
-        break
+# start_time = time.time()
+board = play(str(board))
+# print(" %s seconds" % (round((time.time() - start_time), 4)))
 
-print(board.get_board())
-if board.score < 0:
-    print("%s won the game" % board.min_player)
-else:
-    print("Match drawn")
+# while True:
+#     start_time = time.time()
+#     board = play(str(board))
+#     if terminal_test(board) or str(board).count('.') == 0:
+#         print(" %s seconds" % (round((time.time() - start_time), 4)))
+#         break
+#     print(" %s seconds" % round((time.time() - start_time),4))
+#
+# print(board.get_board())
+# if board.score < 0:
+#     print("%s won the game" % board.min_player)
+# else:
+#     print("Match drawn")
+#
+# print(board.latest_change)
+
+
+
+
+
+
+
+
+
+
+
 
 # def utility(s, p):
 #     # if s.max_player == p:
