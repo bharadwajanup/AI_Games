@@ -1,6 +1,3 @@
-import itertools
-
-
 class Board:
     N = 0
     K = 0
@@ -20,33 +17,36 @@ class Board:
     def __len__(self):
         return len(self.state)
 
+    # Calculate the score for the current state
     def get_score(self, change_index):
         score = 0
         if change_index is not None:
             return self.get_score_for_pos(change_index)
         return score
-        # for i in range(0, len(self.state)):
-        #     score += self.get_score_for_pos(i)
-        # return score
 
+    # Conflict resolution while inserting objects into a heap or a priority queue
     def __eq__(self, other):
         if isinstance(other, Board):
             return -self.score == -other.score
         return -self.score == -other
 
+    # Conflict resolution while inserting objects into a heap or a priority queue
     def __lt__(self, other):
         if isinstance(other, Board):
             return -int(self.score) < -int(other.score)
         return -int(self.score) < -other
 
+    # Conflict resolution while inserting objects into a heap or a priority queue
     def __gt__(self, other):
         if isinstance(other, Board):
             return -int(self.score) > -int(other.score)
         return -int(self.score) > -other
 
+    # Return the string representation of the board.
     def __str__(self):
         return self.state  # + " "+str(self.score)
 
+    # Returns the human readable format of the board.
     def get_board(self):
         string = "\n"
         s = 0
@@ -58,35 +58,23 @@ class Board:
             e = int(self.N) * (i + 1)
         return string.replace('.', '-')
 
+    # Gets a new instance of this class after adding the piece at the desired position.
     @classmethod
     def new_board(cls, state, max_player, min_player, i=None):
         new_state = state if i is None else state[:i] + max_player + state[i + 1:]
 
         return cls(new_state, max_player, min_player, i)
 
+    # get the value at a particular row and column
     def get_value(self, r, c):
         index = self.get_index(r, c)
         return self.state[index]
 
+    # Covert into 1d array index
     def get_index(self, r, c):
         return int(r * int(self.N) + c)
 
-    # def get_score_for_pos(self, i):
-    #     board = self.state
-    #     val = board[i]
-    #     initial_score = 100
-    #     if val == '.' or val == self.min_player:
-    #         return 0
-    #     coverage_list = self.get_coverage_list(i)
-    #     min_distance = self.find_max_pattern(coverage_list, self.max_player)
-    #     if min_distance == 0:
-    #         return -100
-    #     if self.is_obstructing_opponent(coverage_list, self.min_player):
-    #         initial_score -= 20
-    #     if min_distance != self.K-1:  # (0 if self.state[i] != self.max_player else 1):
-    #         initial_score -= 40
-    #     return initial_score
-
+    # Calculates how good placing a piece at this position can be.
     def get_score_for_pos(self, i):
         board = self.state
         val = board[i]
@@ -95,26 +83,33 @@ class Board:
             return 0
         coverage_list = self.get_coverage_list(i)
         min_distance_for_max = self.find_max_pattern(coverage_list, self.max_player)
+        # Temporarily change the piece to observe the effect on min player
         self.state = self.state[:i] + self.min_player + self.state[i+1:]
-        coverage_list_min = self.get_coverage_list(i);
+        coverage_list_min = self.get_coverage_list(i)
+        # Switch it back to how it was.
         self.state = self.state[:i] + self.max_player + self.state[i + 1:]
         min_distance_for_min = self.find_max_pattern(coverage_list_min, self.min_player)
         close_coeff_max = self.K - min_distance_for_max
         close_coeff_min = self.K - min_distance_for_min
+
+        # The game is lost. Return the least possible score
         if min_distance_for_max == 0:
             return -initial_score
 
+        # Assign penalties.
         initial_score -= 5 * close_coeff_min
         initial_score -= 10 * close_coeff_max if close_coeff_max > 1 else 0
 
         return initial_score
 
+    # gets the string along k spots along the row, column and diagonal.
     def get_coverage_list(self, i):
         r, c = self.get_row_col(i)
         row_col = self.get_row_col_elements(r, c)
         diagonals = self.get_diagonal_elements(r, c)
         return row_col + diagonals
 
+    # Convert 1d array index to a 2d index
     def get_row_col(self, i):
         if i is None:
             return None
@@ -122,6 +117,7 @@ class Board:
         r = (i - c) / int(int(self.N))
         return r, c
 
+    # Get row and col string
     def get_row_col_elements(self, r, c):
         start = self.get_limit(c, 'U')
         end = self.get_limit(c, 'L')
@@ -134,6 +130,7 @@ class Board:
 
         return [row_string, col_string]
 
+    # Finds the least distance from the losing combination for the given coverage list for the player.
     def find_max_pattern(self, lst, player):
         min_len = self.K + 1
         for string in lst:
@@ -141,11 +138,13 @@ class Board:
             min_len = min(min_len, count)
         return min_len
 
+    # Returns the elements along the diagonal.
     def get_diagonal_elements(self, r, c):
         diagonal_24 = self.get_diagonal_comparator_string(r, c, 'LR')
         diagonal_13 = self.get_diagonal_comparator_string(r, c, 'RL')
         return [diagonal_24, diagonal_13]
 
+    # Helper to get diagonal elements
     def get_diagonal_comparator_string(self, r, c, diag_type):
         row = r
         col = c
@@ -181,6 +180,7 @@ class Board:
                 col -= 1
         return diag_str
 
+    # Finds and returns the elements along the row or column
     def get_comparator_string(self, start, end, val, type):
         str = ""
         if type == "R":
@@ -194,6 +194,7 @@ class Board:
                 start += 1
             return str
 
+    # Get the boundaries of the board adjusted to 'k' positions.
     def get_limit(self, val, type):
         if type == "U":
             res = val - int(self.K) - 1
@@ -202,18 +203,7 @@ class Board:
             res = val + int(self.K) - 1
             return int(self.N) - 1 if res >= int(self.N) else res
 
-    # def find_max_continuous_player(self, str1, player):
-    #     str_len = len(str1)
-    #     i = 0
-    #     k = int(self.K)
-    #     max_val = 0
-    #     while k + i <= str_len:
-    #         sub_str = str1[i:(k + i)]
-    #         grp_plyr_lst = [len(list(g)) if k == player else 0 for k, g in itertools.groupby(sub_str)]
-    #         max_val = max(max_val, max(grp_plyr_lst))
-    #         i += 1
-    #     return max_val
-
+    # Finds the min distance to lose
     def find_min_distance(self, str1, player):
         key = str1+"|"+player
         if key not in self.min_distance_cache:
@@ -231,12 +221,7 @@ class Board:
 
         return self.min_distance_cache[key]
 
-    # def is_obstructing_opponent(self, string_lst, player):
-    #     for string in string_lst:
-    #         if string.count(player) > 0:
-    #             return True
-    #     return False
-
+    # Calculates how many positions are different from the losing combination
     def find_distance(self, str1, str2):
         if len(str1) != len(str2):
             print("Length of two strings not the same. Debug")
