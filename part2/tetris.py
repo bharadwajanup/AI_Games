@@ -7,8 +7,7 @@ There are some features that are easy to come up with: the landing height, the r
 After the initial implementation with the five features above, I found that the program sometimes leave a few empty columns in the middle of the board and resulting a lose. Then I implemented the number of wells into the features which greatly improve the situation. So the final version of the evaluation consits of six features.
 
 -----------
-Seohyun you can add your part here describing how to optimize the fetrue weights.
-You can also update the feature weights in case you found a better set of weights.
+After the implementation, there were few problems with the optimization on the feature weights. First of all, although it seemed easy to come up with the parameters for the feature weights at the glance, it was hard to come up with the systematic way to optimize the weights. Seconldy, although there were constant problems that causes the game to end, such as not filling the well, simply changing the parameters of the num_well or num_holes did not necessarily solve the problem, which made it hard to systemize the optimization. Therefore, with the initial idea that number of holes should be weighed and the wells that led to the loss of the game, I changed the parameters manually with trials. By observing the constant problems that caused the program to end, I changed the weights on that specific feature. Despite the fact that it went harder and harder to find the better parameters as the program scores better since it takes more time until the end of the game, increasing the number of trials allowed the better scores in result.
 -----------
 
 '''
