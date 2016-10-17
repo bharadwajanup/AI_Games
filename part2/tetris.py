@@ -197,7 +197,7 @@ class ComputerPlayer:
             width = len(new_piece[0])
             height = len(new_piece)
             for col in range(len(board[0]) - width + 1):
-                for row in range(len(board)-1):
+                for row in range(len(board)):
                     if row != 0 and TetrisGame.check_collision((board, 0), new_piece, row, col):
                         try:
                             new_board = TetrisGame.place_piece((board, 0), new_piece, row-1, col)[0]
